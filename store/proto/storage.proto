@@ -1,0 +1,78 @@
+syntax="proto3";
+
+package proto;
+
+option go_package="/proto";
+
+
+service Storage {
+  // 文件夹相关操作
+  rpc Mkdir(MkdirParam) returns (MkdirResponse);
+  rpc Rmdir(RmdirParam) returns(RmdirResponse);
+  rpc Stat(StatParam) returns (StatResponse);
+
+  // 文件相关操作
+  rpc Open(OpenParam) returns (OpenResponse);
+  rpc Write(stream WriteParam) returns(WriteResponse);
+  rpc Read(ReadParam) returns( stream ReadResponse);
+}
+
+message MkdirParam {
+  string path = 1;
+  uint32 mode = 2;
+}
+
+message MkdirResponse {
+  uint32 status = 1;
+}
+
+message RmdirParam {
+  string path = 1;
+}
+
+message RmdirResponse {
+  uint32 status = 1;
+}
+
+message StatParam {
+  string path = 1;
+}
+
+message StatResponse {
+  string name = 1;
+  int64 size = 2;
+  uint32 mode = 3;
+  int64 modTime = 4;
+  bool isDir = 5;
+}
+
+message OpenParam {
+  string name = 1;
+  int32 flags = 2;
+  uint32 mode = 3;
+}
+
+message OpenResponse {
+  uint32 status = 1;
+  int32 fd = 2;
+}
+
+message WriteParam {
+  int32 fd = 1;
+  bytes buf = 2;
+  int32 size =3;
+}
+
+message WriteResponse {
+  uint32 status = 1;
+}
+
+message ReadParam {
+  int32 fd = 1;
+  int32 size =3;
+}
+
+message ReadResponse {
+  uint32 status= 1;
+  bytes buf = 2;
+}
