@@ -1,5 +1,5 @@
 package global
 
 const (
-	ErasureTmpDir = "/tmp/erasure"
+	ErasureTmpDir = "/tmp/checksum"
 )
