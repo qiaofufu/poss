@@ -15,6 +15,7 @@ service Storage {
   rpc Open(OpenParam) returns (OpenResponse);
   rpc Write(stream WriteParam) returns(WriteResponse);
   rpc Read(ReadParam) returns( stream ReadResponse);
+  rpc Del(DelParam) returns(DelResponse);
 }
 
 message MkdirParam {
@@ -75,4 +76,12 @@ message ReadParam {
 message ReadResponse {
   uint32 status= 1;
   bytes buf = 2;
+}
+
+message DelParam {
+  int32 fd = 1;
+}
+
+message DelResponse {
+  uint32 status = 1;
 }

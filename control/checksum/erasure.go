@@ -1,11 +1,19 @@
 package checksum
 
 import (
+	"OSS/global"
 	"fmt"
 	"github.com/klauspost/reedsolomon"
 	"io"
 	"os"
 )
+
+func init() {
+	err := os.MkdirAll(global.ErasureTmpDir, 0755)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func defaultSplitStrategy() (int, int) {
 	return 10, 3
@@ -16,6 +24,7 @@ type Encoder struct {
 }
 
 func New() *Encoder {
+
 	return &Encoder{
 		splitStrategy: defaultSplitStrategy,
 	}
@@ -45,7 +54,7 @@ func (e *Encoder) GenerateDataChunk(filename string) ([]string, error) {
 	}
 	data := make([]*os.File, dataShards)
 	for i := range dataShards {
-		f, err := os.CreateTemp("", fmt.Sprintf("*_data.part%d", i))
+		f, err := os.CreateTemp(global.ErasureTmpDir, fmt.Sprintf("*_data.part%d", i))
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +92,7 @@ func (e *Encoder) Encode(files []string) ([]string, error) {
 
 	parity := make([]*os.File, parityShards)
 	for i := range parityShards {
-		f, err := os.CreateTemp("", fmt.Sprintf("*_parity.part%d", i))
+		f, err := os.CreateTemp(global.ErasureTmpDir, fmt.Sprintf("*_parity.part%d", i))
 		if err != nil {
 			return nil, err
 		}

@@ -30,6 +30,7 @@ type StorageClient interface {
 	Open(ctx context.Context, in *OpenParam, opts ...grpc.CallOption) (*OpenResponse, error)
 	Write(ctx context.Context, opts ...grpc.CallOption) (Storage_WriteClient, error)
 	Read(ctx context.Context, in *ReadParam, opts ...grpc.CallOption) (Storage_ReadClient, error)
+	Del(ctx context.Context, in *DelParam, opts ...grpc.CallOption) (*DelResponse, error)
 }
 
 type storageClient struct {
@@ -142,6 +143,15 @@ func (x *storageReadClient) Recv() (*ReadResponse, error) {
 	return m, nil
 }
 
+func (c *storageClient) Del(ctx context.Context, in *DelParam, opts ...grpc.CallOption) (*DelResponse, error) {
+	out := new(DelResponse)
+	err := c.cc.Invoke(ctx, "/proto.Storage/Del", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StorageServer is the server API for Storage service.
 // All implementations must embed UnimplementedStorageServer
 // for forward compatibility
@@ -154,6 +164,7 @@ type StorageServer interface {
 	Open(context.Context, *OpenParam) (*OpenResponse, error)
 	Write(Storage_WriteServer) error
 	Read(*ReadParam, Storage_ReadServer) error
+	Del(context.Context, *DelParam) (*DelResponse, error)
 	mustEmbedUnimplementedStorageServer()
 }
 
@@ -178,6 +189,9 @@ func (UnimplementedStorageServer) Write(Storage_WriteServer) error {
 }
 func (UnimplementedStorageServer) Read(*ReadParam, Storage_ReadServer) error {
 	return status.Errorf(codes.Unimplemented, "method Read not implemented")
+}
+func (UnimplementedStorageServer) Del(context.Context, *DelParam) (*DelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Del not implemented")
 }
 func (UnimplementedStorageServer) mustEmbedUnimplementedStorageServer() {}
 
@@ -311,6 +325,24 @@ func (x *storageReadServer) Send(m *ReadResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Storage_Del_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelParam)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageServer).Del(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Storage/Del",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageServer).Del(ctx, req.(*DelParam))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Storage_ServiceDesc is the grpc.ServiceDesc for Storage service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -333,6 +365,10 @@ var Storage_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Open",
 			Handler:    _Storage_Open_Handler,
+		},
+		{
+			MethodName: "Del",
+			Handler:    _Storage_Del_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
